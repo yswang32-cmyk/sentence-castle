@@ -51,7 +51,7 @@ textarea{width:100%;min-height:110px;border:2px solid var(--line);border-radius:
 </main>
 <script>
 var SUB=["I","You","He","She","We","They","My father","My mother","My brother","My sister","My teacher","My friend","The dog","The cat","The baby","Tom","Amy"];
-var TM=["yesterday","last night","this morning","after school","last week","in the afternoon"];
+var TM=["yesterday","last night","this morning","last week","after school","in the afternoon","at night","on Sunday"];
 var ADJ=["big","small","new","old","red","sweet","funny","good","pretty"];
 var FEEL=["tired","hungry","happy","sad","late","scared"];
 var V={
@@ -72,6 +72,10 @@ caught:{z:"抓／接",e:"🧤",t:1,o:["a fish","a ball","a bus","a butterfly","a
 fooled:{z:"騙",e:"🤡",t:1,o:["my brother","my friend","my teacher","the cat"],ad:["quickly","well"]},
 meant:{z:"打算",e:"💭",t:1,n:1,o:["to help","to play","to say sorry"],ad:[]}
 };
+var X={walked:[["laughed","ate noodles","took a nap","took a bath"],["tired","happy"]],ran:[["jumped","laughed","cried","caught a ball"],["scared","late","happy"]],jumped:[["laughed","danced","ran home","cried"],["happy","scared"]],danced:[["laughed","took a photo","ate cake"],["happy"]],swam:[["laughed","ate ice cream","took a bath","took a nap"],["happy"]],laughed:[["danced","jumped","ate cake","took a photo"],["happy"]],cried:[["ran home","walked home","took a nap","ate rice"],["sad","scared"]],hurried:[["ate breakfast","took a bus","caught a bus"],["late"]],wondered:[["wrote a story","wrote a diary","took a nap"],["happy","sad"]],wrote:[["laughed","cried","took a nap","ate cake"],["happy","sad"]],took:[["walked home","wrote a card","ate cake","laughed"],["tired","happy"]],taught:[["laughed","wrote a story","ate rice"],["happy"]],ate:[["took a nap","laughed","took a bath","wrote my homework"],["hungry","happy"]],caught:[["laughed","jumped","ran home","took a photo"],["happy"]],fooled:[["laughed","ran home","jumped"],["happy"]],meant:[[],["happy","sad"]]};
+for(var xk in X){V[xk].nx=X[xk][0];V[xk].fe=X[xk][1]}
+V.jumped.ad=["happily","quickly","carefully"];
+var HT={TM:'yesterday、last、this 開頭的時間不加 in／on／at；早上下午晚上用 in the；夜晚用 at night；星期用 on',ADV:'副詞放在動作的最後面（東西或地點之後），不放在動詞和東西中間',CJ:'and：接著做另一件事；but：相反的情況；because：說原因；so：說結果',T:'接著說的內容要和前面的句意有關，不要重複同一個動作'};
 var LV=["動作小兵","時間地圖","尋找寶物","魔法裝備","連接橋","故事王"];
 var GOAL=["誰 + 做了什麼：選一個主詞和一個動作","加上「在哪裡」，還可以加「什麼時候」","動詞後面要接「東西」，把寶物放進句子","加形容詞和副詞，讓句子更精彩","用 and / but / because / so 把兩句話接起來","自己寫 2 到 3 句小故事，點單字可以加入"];
 var CL={S:"var(--S)",V:"var(--V)",O:"var(--O)",WH:"var(--W)",TM:"var(--W)",ADJ:"var(--A)",ADV:"var(--A)",CJ:"var(--C)",T:"var(--C)"};
@@ -91,13 +95,13 @@ function list(k){var v=vt();
 if(k=="S")return SUB;if(k=="V")return pool();if(k=="O")return v.o;if(k=="WH")return v.wh;if(k=="TM")return TM;
 if(k=="ADV")return v.ad;if(k=="CJ")return["and","but","because","so"];
 if(k=="ADJ")return st.O&&/^an? /.test(st.O)?ADJ:[];
-if(k=="T")return st.CJ=="and"?Object.keys(V).filter(function(x){return !V[x].t}):FEEL;return[]}
+if(k=="T"){if(!st.CJ)return[];if(st.CJ=="and")return v.nx;if(st.CJ=="but")return FEEL.filter(function(x){return v.fe.indexOf(x)<0});return v.fe}return[]}
 function art(w){return/^[aeiou]/.test(w)?"an":"a"}
 function low(s){return s.replace(/^(The|My|He|She|We|They|You) /,function(m){return m.toLowerCase()})}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 function sentence(){if(!st.S||!st.V)return"";var v=vt(),p=[st.S,st.V];
 if(v.t){var o=st.O;if(o&&st.ADJ&&/^an? /.test(o))o=o.replace(/^an? (.*)$/,function(m,r){return art(st.ADJ)+" "+st.ADJ+" "+r});if(o)p.push(o);if(st.ADV)p.push(st.ADV)}
-else{if(st.ADV)p.push(st.ADV);if(st.WH)p.push(st.WH)}
+else{if(st.WH)p.push(st.WH);if(st.ADV)p.push(st.ADV)}
 if(st.TM&&lv>=1&&lv<=3)p.push(st.TM);
 var b=p.join(" ");
 if(lv==4&&st.CJ&&st.T){var state=(PR[st.S]||"it was")+" "+st.T;
@@ -117,6 +121,11 @@ if(/\beaten\b/i.test(t))m.push("過去式要用 ate，eaten 是另一種形式")
 if(/\b(runned|eated|taked|writed|swimmed|catched|teached|meaned)\b/i.test(t))m.push("這是不規則動詞：ran, ate, took, wrote, swam, caught, taught, meant");
 if(/\b(walked|swam|ran|jumped)\s+the\b/i.test(t))m.push("動詞後面要先加 in / to / across / over，再放 the 地點");
 if(/\b(hurried|ran|walked)\s+(take|go|eat|get)\b/i.test(t))m.push("兩個動詞不能直接連在一起，要加 to（hurried to take）或用 and");
+if(/\b(in|on|at)\s+(yesterday|last\s+\w+|this\s+(morning|afternoon|evening|week)|today|tomorrow)\b/i.test(t))m.push('yesterday、last、this 開頭的時間前面不用 in／on／at');
+if(/\bin\s+(morning|afternoon|evening)\b/i.test(t))m.push('早上、下午、晚上要說 in the morning／afternoon／evening');
+if(/\bat\s+the\s+night\b/i.test(t))m.push('夜晚要說 at night，不加 the');
+if(/\b(ate|wrote|took|taught|caught|fooled)\s+(quickly|slowly|carefully|happily|loudly|quietly|well|fast|sadly)\s+(a|an|the|my|his|her|our|your|rice|noodles|english|math|cake|breakfast)\b/i.test(t))m.push('副詞不放在動詞和受詞中間，要放到句尾（例如 ate rice quickly）');
+if(/\b(walked|ran|jumped|danced|swam|laughed|cried|hurried|wondered|wrote|took|taught|ate|caught|fooled|meant)\b[^.]*\band\s+\1\b/i.test(t))m.push('and 前後不要重複同一個動作，句意會很奇怪');
 return m}
 function render(){
 var lvl=1+Math.floor(P.xp/50),T=["見習生","小兵","探險家","騎士","魔法師","故事王"];
@@ -130,20 +139,38 @@ if(lv==5){renderFree();return}
 var h="";["S","V","O","WH","TM","ADJ","ADV","CJ","T"].forEach(function(k){if(!vis(k))return;
 var ls=list(k);var cur=st[k]||"";
 h+='<div class="slot" style="--c:'+CL[k]+'"><b>'+NM[k]+"</b><div class=\"chips\">";
+if(k=="T"&&!ls.length)h+='<span class="hint">'+(st.CJ?"這個動作不適合用 and 接，請換連接詞":"先選連接詞")+"</span>";
 if(k=="ADJ"&&!ls.length)h+='<span class="hint">'+(st.O?"這個詞前面不用形容詞":"先選東西")+"</span>";
 ls.forEach(function(w){var z=k=="V"?V[w].e+" "+w+"<small>"+V[w].z+"</small>":w;
 h+='<button class="chip'+(cur==w?" on":"")+'" data-k="'+k+'" data-v="'+w+'">'+z+"</button>"});
-h+='</div><input class="cu" data-k="'+k+'" placeholder="✏️ 自己寫" value="'+(ls.indexOf(cur)<0?cur.replace(/"/g,""):"")+'"></div>'});
+h+='</div>'+(HT[k]?'<div class="hint">'+HT[k]+'</div>':"")+'<input class="cu" data-k="'+k+'" placeholder="✏️ 自己寫" value="'+(ls.indexOf(cur)<0?cur.replace(/"/g,""):"")+'"></div>'});
 $("slots").innerHTML=h;upd()}
 function renderFree(){
 var banks={"誰":SUB,"動詞":Object.keys(V),"時間":TM,"形容詞":ADJ,"連接詞":["and","but","because","so"],"地點":["in the park","at home","to school","in the sea"],"東西":["an apple","a letter","noodles","a photo"]};
 var h='<textarea id="ta" placeholder="Yesterday, my sister ate noodles. She was hungry, so she ate fast."></textarea>';
 Object.keys(banks).forEach(function(n){h+='<div class="slot" style="--c:var(--A)"><b>'+n+'</b><div class="chips">'+banks[n].map(function(w){return'<button class="chip" data-add="'+w+'">'+w+"</button>"}).join("")+"</div></div>"});
 $("slots").innerHTML=h;$("sent").textContent="寫完後按「完成」檢查";$("msg").textContent="";$("msg").className="msg"}
+function sem(){var v=vt(),w=[];if(!v||!st.S)return w;var S=st.S,N=st.V,O=st.O||'',tm=st.TM||'',A=['The dog','The cat','The baby'];
+if(A.indexOf(S)>=0&&['wrote','taught','wondered','meant'].indexOf(N)>=0)w.push(S+' 不會做「'+N+'」（'+v.z+'），請換主詞或動作');
+if(S!='The baby'&&A.indexOf(S)>=0&&N=='took'&&/bus|photo|umbrella/.test(O))w.push(S+' 不會 took '+O+'，請換一個');
+if(O&&(O.toLowerCase()==S.toLowerCase()||(S=='I'&&O=='me')))w.push('做事的人和受詞是同一個人，句意很奇怪');
+if(/breakfast/.test(O)&&/night/.test(tm))w.push('breakfast 是早餐，不會在晚上吃，請換時間或東西');
+if(st.ADV&&v.ad.indexOf(st.ADV)<0&&!/^\w+ly$|^(fast|well|hard|together|again|too)$/.test(st.ADV))w.push('「怎麼做」要放副詞（一個字，常以 -ly 結尾，例如 slowly）');
+if(st.WH&&!v.t&&v.wh.indexOf(st.WH)<0&&!/^(to|in|at|on|into|over|across|along|after|with|about|up|under|near)\b|^(home|here|there)$/i.test(st.WH))w.push('地點前面要有 in／at／on／to 等字（或用 home、here、there）');
+if(v.t&&O&&v.o.indexOf(O)<0&&/^(in|at|on|to|into|over|across|along|after|with)\s/i.test(O))w.push(N+' 後面直接放東西，不要加 '+O.split(' ')[0]);
+if(/^(in|on|at)\s+(yesterday|last |this |today|tomorrow|next |every )/i.test(tm))w.push('yesterday、last、this 開頭的時間前面不能再加 in／on／at');
+if(/^(the\s+)?(morning|afternoon|evening)$/i.test(tm))w.push('早上、下午、晚上要說 in the '+tm.replace(/^the\s+/i,''));
+if(/^(the\s+)?night$/i.test(tm))w.push('夜晚要說 at night');
+if(/^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(tm))w.push('星期前面要加 on，例如 on '+tm);
+if(/^\d{4}$/.test(tm))w.push('年份前面要加 in，例如 in '+tm);
+if(lv==4&&st.CJ&&st.T){var T=st.T,f=T.split(' ')[0];
+if(st.CJ=='and'){if(f==N)w.push('and 後面不能重複同一個動作（'+N+'），請選另一個動作');else if(!/^(\w+ed|ran|swam|wrote|took|taught|ate|caught|meant|sang|went|sat)$/.test(f))w.push('and 後面要放另一個過去式動作，例如 laughed')}
+else if((st.CJ=='because'||st.CJ=='so')&&FEEL.indexOf(T)>=0&&v.fe.indexOf(T)<0)w.push('感覺和動作不太搭：'+N+' 通常搭配 '+v.fe.join('、'))}
+return w}
 function upd(){if(lv==5)return;var s=sentence(),m=$("msg");
 $("sent").textContent=s||"先選一個「誰」和「做什麼」";
-if(!s||!ready()){m.textContent=s?"還差一點：把必選的格子填滿":"";m.className="msg";return}
-var c=check(s);m.textContent=c.length?c.join("；"):"看起來很棒！按完成拿經驗值";m.className="msg "+(c.length?"bad":"good")}
+if(!s||!ready()){var w0=s?sem():[];m.textContent=w0.length?w0.join("；"):s?"還差一點：把必選的格子填滿":"";m.className=w0.length?"msg bad":"msg";return}
+var c=check(s).concat(sem());m.textContent=c.length?c.join("；"):"看起來很棒！按完成拿經驗值";m.className="msg "+(c.length?"bad":"good")}
 function speak(t){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
 function cur(){return lv==5?($("ta")?$("ta").value:""):sentence()}
 function award(s,m){
@@ -155,7 +182,7 @@ P.xp+=g;P.c[lv]++;save();m.textContent="🎉 +"+g+" XP！"+(P.c[lv]==3&&lv<5?"�
 if(lv<5){st={};var t=$("sent");render();$("msg").textContent="🎉 +"+g+" XP！"+(P.c[lv]==3?"下一關解鎖了！":"");$("msg").className="msg good"}else{var x=$("msg").textContent;render();$("msg").textContent=x;$("msg").className="msg good"}}
 function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 async function review(s){try{if(typeof claude==="undefined")return null;var sm=await claude.use("sample");if(!sm)return null;
-var q="你是國小英文老師，學生是剛學過去式的小三生。請檢查學生寫的英文句子，目前關卡目標："+GOAL[lv]+"。檢查項目：文法、過去式與不規則動詞、a/an、介系詞、動詞後面是否少了受詞或地點、連接詞是否合適，以及句意是否合理（例如 ate a bus 不合理）。細小但不影響理解的瑕疵可視為通過，在 praise 提醒即可。只回傳 JSON，不要 markdown：{\"ok\":true或false,\"zh\":\"整句的中文意思\",\"fix\":\"修正後的英文，通過時可給更自然的說法\",\"issues\":[{\"wrong\":\"出錯的片段\",\"why\":\"用小三聽得懂的繁體中文說明原因\",\"tip\":\"一句記憶小口訣，可為空字串\"}],\"praise\":\"一句鼓勵\"}。學生句子："+s;
+var q="你是國小英文老師，學生是剛學過去式的小三生。請檢查學生寫的英文句子，目前關卡目標："+GOAL[lv]+"。檢查項目：時間詞前面的介係詞（例如 yesterday 前不用 in）、副詞位置、文法、過去式與不規則動詞、a/an、介系詞、動詞後面是否少了受詞或地點、連接詞是否合適，以及句意是否合理（例如 ate a bus 不合理）。細小但不影響理解的瑕疵可視為通過，在 praise 提醒即可。只回傳 JSON，不要 markdown：{\"ok\":true或false,\"zh\":\"整句的中文意思\",\"fix\":\"修正後的英文，通過時可給更自然的說法\",\"issues\":[{\"wrong\":\"出錯的片段\",\"why\":\"用小三聽得懂的繁體中文說明原因\",\"tip\":\"一句記憶小口訣，可為空字串\"}],\"praise\":\"一句鼓勵\"}。學生句子："+s;
 var r=await sm(q,{modelTier:"quick",cache:false});return JSON.parse(r.text.replace(/```json|```/g,"").trim())}catch(e){return null}}
 function showFb(r,s){var h='<div class="fbx '+(r.ok?"g":"b")+'"><div>📖 意思：'+esc(r.zh)+"</div>";
 if(r.ok){h+="<div>✅ "+esc(r.praise||"句子正確！")+"</div>";if(r.fix&&r.fix.trim()!==s.trim())h+="<div>💡 也可以這樣說：<b>"+esc(r.fix)+'</b> <button data-say="'+esc(r.fix)+'">🔊</button></div>'}
@@ -163,6 +190,7 @@ else{(r.issues||[]).forEach(function(i){h+="<div>❌ <b>"+esc(i.wrong)+"</b>："
 $("fb").innerHTML=h+"</div>"}
 async function done(){var s=cur(),m=$("msg"),b=$("bd");
 if(!s.trim()||(lv<5&&!ready())){m.textContent=s.trim()?"還有必選的格子沒有填喔":"先寫一個句子";m.className="msg bad";return}
+var w=lv<5?sem():[];if(w.length){m.textContent=w.join("；");m.className="msg bad";return}
 b.disabled=true;m.textContent="🔍 老師檢查中…";m.className="msg";$("fb").innerHTML="";
 var r=await review(s);b.disabled=false;
 if(!r){award(s,m);$("fb").innerHTML='<div class="fbx">目前無法使用老師檢查，只做了基本文法檢查。</div>';return}
