@@ -188,10 +188,12 @@ function showFb(r,s){var h='<div class="fbx '+(r.ok?"g":"b")+'"><div>📖 意思
 if(r.ok){h+="<div>✅ "+esc(r.praise||"句子正確！")+"</div>";if(r.fix&&r.fix.trim()!==s.trim())h+="<div>💡 也可以這樣說：<b>"+esc(r.fix)+'</b> <button data-say="'+esc(r.fix)+'">🔊</button></div>'}
 else{(r.issues||[]).forEach(function(i){h+="<div>❌ <b>"+esc(i.wrong)+"</b>："+esc(i.why)+(i.tip?"<br>💡 "+esc(i.tip):"")+"</div>"});h+="<div>✏️ 建議寫法：<b>"+esc(r.fix)+'</b> <button data-say="'+esc(r.fix)+'">🔊</button></div>'}
 $("fb").innerHTML=h+"</div>"}
+async function trans(s){try{if(typeof claude==="undefined")return"";var sm=await claude.use("sample");if(!sm)return"";var r=await sm("把下面的英文直接翻成自然的繁體中文。照字面意思翻，即使句意奇怪也不要修正或解釋，只回傳中文翻譯，不要其他文字：\n"+s,{modelTier:"quick",cache:false});return r.text.trim()}catch(e){return""}}
 async function done(){var s=cur(),m=$("msg"),b=$("bd");
 if(!s.trim()||(lv<5&&!ready())){m.textContent=s.trim()?"還有必選的格子沒有填喔":"先寫一個句子";m.className="msg bad";return}
+b.disabled=true;m.textContent="📖 翻譯中…";m.className="msg";$("fb").innerHTML="";var tr=await trans(s);b.disabled=false;if(tr)$("fb").innerHTML='<div class="fbx">📖 初步翻譯：'+esc(tr)+"</div>";
 var w=lv<5?sem():[];if(w.length){m.textContent=w.join("；");m.className="msg bad";return}
-b.disabled=true;m.textContent="🔍 老師檢查中…";m.className="msg";$("fb").innerHTML="";
+b.disabled=true;m.textContent="🔍 老師檢查中…";m.className="msg";
 var r=await review(s);b.disabled=false;
 if(!r){award(s,m);$("fb").innerHTML='<div class="fbx">目前無法使用老師檢查，只做了基本文法檢查。</div>';return}
 if(r.ok&&!check(s).length){award(s,m);showFb(r,s)}else{showFb(r,s);m.textContent=r.ok?check(s).join("；"):"修改後再按一次完成，就能拿到經驗值！";m.className="msg bad"}}
