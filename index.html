@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>造句城堡</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fdf8ee;--card:#fff;--ink:#2a2438;--mut:#7a7390;--line:#e6dcc8;--S:#2f6fe4;--V:#e0433a;--O:#1f9d55;--W:#d98e04;--A:#8a45d6;--C:#e8731a;--ok:#1f9d55;--bad:#c62f2f}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#1b1730;--card:#272142;--ink:#f3eefc;--mut:#a69fc0;--line:#3d3560;--S:#6ea0ff;--V:#ff7a70;--O:#4cd68a;--W:#f5b73a;--A:#c08bff;--C:#ff9a4d;--ok:#4cd68a;--bad:#ff7a7a}}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Baloo 2","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:14px}
+h1{font-size:1.5rem;margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hero{font-weight:700;color:var(--A)}
+.bar{height:10px;background:var(--line);border-radius:9px;overflow:hidden;margin:6px 0 12px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--W),var(--V));width:0;transition:width .4s}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.tabs button{flex:0 0 auto;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:6px 10px;font:inherit;font-size:.85rem;cursor:pointer}
+.tabs button.on{border-color:var(--A);background:var(--A);color:#fff}
+.tabs button:disabled{opacity:.45;cursor:not-allowed}
+.goal{margin:8px 0;color:var(--mut);font-size:.9rem}
+.slot{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:8px 10px;margin:8px 0}
+.slot b{color:var(--c);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:999px;padding:4px 11px;font:inherit;cursor:pointer}
+.chip small{color:var(--mut);margin-left:3px}
+.chip.on{background:var(--c);color:#fff}.chip.on small{color:#fff}
+.cu{width:100%;border:1px dashed var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:4px 8px;font:inherit;font-size:.9rem}
+.hint{color:var(--mut);font-size:.85rem}
+.pre{background:var(--card);border:2px solid var(--A);border-radius:14px;padding:12px;margin:12px 0;min-height:64px}
+.pre .s{font-size:1.4rem;font-weight:700;word-break:break-word}
+.msg{margin-top:6px;font-size:.95rem}.msg.bad{color:var(--bad)}.msg.good{color:var(--ok)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{flex:1;min-width:90px;border:0;border-radius:12px;padding:10px;font:inherit;font-weight:700;color:#fff;cursor:pointer}
+.b1{background:var(--S)}.b2{background:var(--W)}.b3{background:var(--O)}
+.acts button:disabled{opacity:.4}
+textarea{width:100%;min-height:110px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;padding:8px}
+.weak{margin-top:14px;font-size:.9rem}.weak button{border:1px solid var(--bad);background:transparent;color:var(--bad);border-radius:8px;margin:2px;padding:2px 8px;font:inherit;cursor:pointer}
+.fbx{margin-top:10px;padding:10px;border-radius:10px;border:2px solid var(--line);font-size:.95rem;line-height:1.7}.fbx.g{border-color:var(--ok)}.fbx.b{border-color:var(--bad)}.fbx button{border:1px solid var(--S);background:transparent;color:var(--S);border-radius:8px;padding:0 8px;cursor:pointer;font:inherit}
+:focus-visible{outline:3px solid var(--A);outline-offset:2px}
+</style></head><body><main>
+<div class="top"><h1>🏰 造句城堡</h1><div class="hero" id="hero"></div></div>
+<div class="bar"><i id="xp"></i></div>
+<div class="tabs" id="tabs"></div>
+<div class="goal" id="goal"></div>
+<div id="slots"></div>
+<div class="pre"><div class="s" id="sent">先選一個「誰」和「做什麼」</div><div class="msg" id="msg"></div><div id="fb"></div></div>
+<div class="acts"><button class="b1" id="bs">🔊 聽</button><button class="b2" id="bl">🎤 我來唸</button><button class="b3" id="bd">✅ 完成</button></div>
+<div class="weak" id="weak"></div>
+</main>
+<script>
+var SUB=["I","You","He","She","We","They","My father","My mother","My brother","My sister","My teacher","My friend","The dog","The cat","The baby","Tom","Amy"];
+var TM=["yesterday","last night","this morning","after school","last week","in the afternoon"];
+var ADJ=["big","small","new","old","red","sweet","funny","good","pretty"];
+var FEEL=["tired","hungry","happy","sad","late","scared"];
+var V={
+walked:{z:"走",e:"🚶",t:0,wh:["to school","home","in the park","along the river"],ad:["slowly","quickly","happily"]},
+ran:{z:"跑",e:"🏃",t:0,wh:["home","to the door","in the park","after the dog"],ad:["fast","quickly","happily"]},
+jumped:{z:"跳",e:"🦘",t:0,wh:["over the fence","on the bed","into the pool","up"],ad:["high","happily","quickly"]},
+danced:{z:"跳舞",e:"💃",t:0,wh:["at the party","on the stage","to the music","with her friend"],ad:["happily","well","together"]},
+swam:{z:"游泳",e:"🏊",t:0,wh:["in the pool","in the sea","across the lake","with my father"],ad:["fast","quickly","well"]},
+laughed:{z:"笑",e:"😂",t:0,wh:["at the joke","with my friends","at home"],ad:["loudly","happily","together"]},
+cried:{z:"哭",e:"😭",t:0,wh:["in the room","at home","at night"],ad:["loudly","quietly","sadly"]},
+hurried:{z:"趕緊",e:"💨",t:0,wh:["to school","home","to the bus stop"],ad:["quickly","fast"]},
+wondered:{z:"好奇",e:"🤔",t:0,wh:["about the stars","about the moon"],ad:["quietly"]},
+wrote:{z:"寫",e:"✍️",t:1,o:["a letter","a story","a card","a diary","my name","my homework"],ad:["carefully","quickly","well"]},
+took:{z:"拿／搭／拍",e:"📸",t:1,o:["a bus","a photo","a bath","a nap","an umbrella","a book"],ad:["carefully","quickly"]},
+taught:{z:"教",e:"👩‍🏫",t:1,o:["English","math","me","the students","my sister"],ad:["well","carefully","happily"]},
+ate:{z:"吃",e:"🍚",t:1,o:["an apple","rice","noodles","a sandwich","breakfast","cake","ice cream","dumplings"],ad:["quickly","slowly","happily"]},
+caught:{z:"抓／接",e:"🧤",t:1,o:["a fish","a ball","a bus","a butterfly","a cold"],ad:["quickly","carefully"]},
+fooled:{z:"騙",e:"🤡",t:1,o:["my brother","my friend","my teacher","the cat"],ad:["quickly","well"]},
+meant:{z:"打算",e:"💭",t:1,n:1,o:["to help","to play","to say sorry"],ad:[]}
+};
+var LV=["動作小兵","時間地圖","尋找寶物","魔法裝備","連接橋","故事王"];
+var GOAL=["誰 + 做了什麼：選一個主詞和一個動作","加上「在哪裡」，還可以加「什麼時候」","動詞後面要接「東西」，把寶物放進句子","加形容詞和副詞，讓句子更精彩","用 and / but / because / so 把兩句話接起來","自己寫 2 到 3 句小故事，點單字可以加入"];
+var CL={S:"var(--S)",V:"var(--V)",O:"var(--O)",WH:"var(--W)",TM:"var(--W)",ADJ:"var(--A)",ADV:"var(--A)",CJ:"var(--C)",T:"var(--C)"};
+var NM={S:"誰",V:"做什麼（過去式）",O:"什麼東西",WH:"在哪裡",TM:"什麼時候",ADJ:"形容詞",ADV:"怎麼做",CJ:"連接詞",T:"接著說"};
+var PR={"I":"I was","You":"you were","He":"he was","She":"she was","We":"we were","They":"they were","My father":"he was","My mother":"she was","My brother":"he was","My sister":"she was","My teacher":"they were","My friend":"they were","The dog":"it was","The cat":"it was","The baby":"the baby was","Tom":"he was","Amy":"she was"};
+function load(){try{var p=JSON.parse(localStorage.getItem("castle1"));if(p&&p.c)return p}catch(e){}return{xp:0,c:[0,0,0,0,0,0],weak:[]}}
+var P=load(),lv=0,st={};
+function save(){try{localStorage.setItem("castle1",JSON.stringify(P))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function vt(){return st.V?V[st.V]:null}
+function pool(){return Object.keys(V).filter(function(k){var v=V[k];return lv<2?!v.t:lv==2?v.t:lv==3?v.ad.length>0:true})}
+function vis(k){var v=vt(),t=v&&v.t;
+if(k=="S"||k=="V")return true;if(!v)return false;
+if(k=="O")return t&&lv>=2;if(k=="WH")return !t&&lv>=1;if(k=="TM")return lv>=1&&lv<=3;
+if(k=="ADJ")return t&&lv==3&&!v.n;if(k=="ADV")return lv>=3&&v.ad.length>0;return lv==4}
+function list(k){var v=vt();
+if(k=="S")return SUB;if(k=="V")return pool();if(k=="O")return v.o;if(k=="WH")return v.wh;if(k=="TM")return TM;
+if(k=="ADV")return v.ad;if(k=="CJ")return["and","but","because","so"];
+if(k=="ADJ")return st.O&&/^an? /.test(st.O)?ADJ:[];
+if(k=="T")return st.CJ=="and"?Object.keys(V).filter(function(x){return !V[x].t}):FEEL;return[]}
+function art(w){return/^[aeiou]/.test(w)?"an":"a"}
+function low(s){return s.replace(/^(The|My|He|She|We|They|You) /,function(m){return m.toLowerCase()})}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function sentence(){if(!st.S||!st.V)return"";var v=vt(),p=[st.S,st.V];
+if(v.t){var o=st.O;if(o&&st.ADJ&&/^an? /.test(o))o=o.replace(/^an? (.*)$/,function(m,r){return art(st.ADJ)+" "+st.ADJ+" "+r});if(o)p.push(o);if(st.ADV)p.push(st.ADV)}
+else{if(st.ADV)p.push(st.ADV);if(st.WH)p.push(st.WH)}
+if(st.TM&&lv>=1&&lv<=3)p.push(st.TM);
+var b=p.join(" ");
+if(lv==4&&st.CJ&&st.T){var state=(PR[st.S]||"it was")+" "+st.T;
+if(st.CJ=="and")b+=" and "+st.T;else if(st.CJ=="so")b=cap(state)+", so "+low(b);
+else b+=(st.CJ=="but"?", but ":" because ")+state}
+return cap(b)+"."}
+function ready(){var v=vt();if(!st.S||!v)return false;
+if(v.t&&lv>=2&&!st.O)return false;if(!v.t&&lv>=1&&lv<=3&&!st.WH)return false;
+if(lv==3&&!(st.ADJ||st.ADV))return false;if(lv==4&&!(st.CJ&&st.T))return false;return true}
+function check(t){var m=[];t=t.trim();
+if(!t)return["先寫一個句子"];
+t.split(/(?<=[.!?])\s+/).forEach(function(s){
+if(/^[a-z]/.test(s))m.push("句子開頭要大寫："+s);
+if(!/[.!?]$/.test(s))m.push("句尾要加句點："+s)});
+if(/\b(is|am|are)\s+(very\s+)?(love|like|eat|walk|run|jump|dance|swim|write|take)\b/i.test(t))m.push("一個句子只有一個主要動詞，不要 is 加動詞（例如 I love，不是 I am love）");
+if(/\beaten\b/i.test(t))m.push("過去式要用 ate，eaten 是另一種形式");
+if(/\b(runned|eated|taked|writed|swimmed|catched|teached|meaned)\b/i.test(t))m.push("這是不規則動詞：ran, ate, took, wrote, swam, caught, taught, meant");
+if(/\b(walked|swam|ran|jumped)\s+the\b/i.test(t))m.push("動詞後面要先加 in / to / across / over，再放 the 地點");
+if(/\b(hurried|ran|walked)\s+(take|go|eat|get)\b/i.test(t))m.push("兩個動詞不能直接連在一起，要加 to（hurried to take）或用 and");
+return m}
+function render(){
+var lvl=1+Math.floor(P.xp/50),T=["見習生","小兵","探險家","騎士","魔法師","故事王"];
+$("fb").innerHTML="";$("hero").textContent="Lv."+lvl+" "+T[Math.min(lvl-1,5)]+"・"+P.xp+" XP";
+$("xp").style.width=(P.xp%50)*2+"%";
+$("tabs").innerHTML=LV.map(function(n,i){var lock=i>0&&P.c[i-1]<3;
+return'<button data-lv="'+i+'"'+(lock?" disabled":"")+(i==lv?' class="on"':"")+">"+(lock?"🔒 ":"")+(i+1)+" "+n+" "+Math.min(P.c[i],3)+"/3</button>"}).join("");
+$("goal").textContent=GOAL[lv];
+var wk=P.weak.slice(-8);$("weak").innerHTML=wk.length?"需要再練習的字（點一下聽發音）：<br>"+wk.map(function(w){return'<button data-say="'+w+'">'+w+"</button>"}).join(""):"";
+if(lv==5){renderFree();return}
+var h="";["S","V","O","WH","TM","ADJ","ADV","CJ","T"].forEach(function(k){if(!vis(k))return;
+var ls=list(k);var cur=st[k]||"";
+h+='<div class="slot" style="--c:'+CL[k]+'"><b>'+NM[k]+"</b><div class=\"chips\">";
+if(k=="ADJ"&&!ls.length)h+='<span class="hint">'+(st.O?"這個詞前面不用形容詞":"先選東西")+"</span>";
+ls.forEach(function(w){var z=k=="V"?V[w].e+" "+w+"<small>"+V[w].z+"</small>":w;
+h+='<button class="chip'+(cur==w?" on":"")+'" data-k="'+k+'" data-v="'+w+'">'+z+"</button>"});
+h+='</div><input class="cu" data-k="'+k+'" placeholder="✏️ 自己寫" value="'+(ls.indexOf(cur)<0?cur.replace(/"/g,""):"")+'"></div>'});
+$("slots").innerHTML=h;upd()}
+function renderFree(){
+var banks={"誰":SUB,"動詞":Object.keys(V),"時間":TM,"形容詞":ADJ,"連接詞":["and","but","because","so"],"地點":["in the park","at home","to school","in the sea"],"東西":["an apple","a letter","noodles","a photo"]};
+var h='<textarea id="ta" placeholder="Yesterday, my sister ate noodles. She was hungry, so she ate fast."></textarea>';
+Object.keys(banks).forEach(function(n){h+='<div class="slot" style="--c:var(--A)"><b>'+n+'</b><div class="chips">'+banks[n].map(function(w){return'<button class="chip" data-add="'+w+'">'+w+"</button>"}).join("")+"</div></div>"});
+$("slots").innerHTML=h;$("sent").textContent="寫完後按「完成」檢查";$("msg").textContent="";$("msg").className="msg"}
+function upd(){if(lv==5)return;var s=sentence(),m=$("msg");
+$("sent").textContent=s||"先選一個「誰」和「做什麼」";
+if(!s||!ready()){m.textContent=s?"還差一點：把必選的格子填滿":"";m.className="msg";return}
+var c=check(s);m.textContent=c.length?c.join("；"):"看起來很棒！按完成拿經驗值";m.className="msg "+(c.length?"bad":"good")}
+function speak(t){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+function cur(){return lv==5?($("ta")?$("ta").value:""):sentence()}
+function award(s,m){
+if(lv<5&&!ready()){m.textContent="還有必選的格子沒有填喔";m.className="msg bad";return}
+var c=check(s);if(c.length){m.textContent=c.join("；");m.className="msg bad";return}
+var n=s.split(/[.!?]/).filter(function(x){return x.trim()}).length,g=10;
+if(lv==5){if(n<2){m.textContent="故事要有至少 2 句";m.className="msg bad";return}g=n>=3?25:15}
+P.xp+=g;P.c[lv]++;save();m.textContent="🎉 +"+g+" XP！"+(P.c[lv]==3&&lv<5?"下一關解鎖了！":"");m.className="msg good";
+if(lv<5){st={};var t=$("sent");render();$("msg").textContent="🎉 +"+g+" XP！"+(P.c[lv]==3?"下一關解鎖了！":"");$("msg").className="msg good"}else{var x=$("msg").textContent;render();$("msg").textContent=x;$("msg").className="msg good"}}
+function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+async function review(s){try{if(typeof claude==="undefined")return null;var sm=await claude.use("sample");if(!sm)return null;
+var q="你是國小英文老師，學生是剛學過去式的小三生。請檢查學生寫的英文句子，目前關卡目標："+GOAL[lv]+"。檢查項目：文法、過去式與不規則動詞、a/an、介系詞、動詞後面是否少了受詞或地點、連接詞是否合適，以及句意是否合理（例如 ate a bus 不合理）。細小但不影響理解的瑕疵可視為通過，在 praise 提醒即可。只回傳 JSON，不要 markdown：{\"ok\":true或false,\"zh\":\"整句的中文意思\",\"fix\":\"修正後的英文，通過時可給更自然的說法\",\"issues\":[{\"wrong\":\"出錯的片段\",\"why\":\"用小三聽得懂的繁體中文說明原因\",\"tip\":\"一句記憶小口訣，可為空字串\"}],\"praise\":\"一句鼓勵\"}。學生句子："+s;
+var r=await sm(q,{modelTier:"quick",cache:false});return JSON.parse(r.text.replace(/```json|```/g,"").trim())}catch(e){return null}}
+function showFb(r,s){var h='<div class="fbx '+(r.ok?"g":"b")+'"><div>📖 意思：'+esc(r.zh)+"</div>";
+if(r.ok){h+="<div>✅ "+esc(r.praise||"句子正確！")+"</div>";if(r.fix&&r.fix.trim()!==s.trim())h+="<div>💡 也可以這樣說：<b>"+esc(r.fix)+'</b> <button data-say="'+esc(r.fix)+'">🔊</button></div>'}
+else{(r.issues||[]).forEach(function(i){h+="<div>❌ <b>"+esc(i.wrong)+"</b>："+esc(i.why)+(i.tip?"<br>💡 "+esc(i.tip):"")+"</div>"});h+="<div>✏️ 建議寫法：<b>"+esc(r.fix)+'</b> <button data-say="'+esc(r.fix)+'">🔊</button></div>'}
+$("fb").innerHTML=h+"</div>"}
+async function done(){var s=cur(),m=$("msg"),b=$("bd");
+if(!s.trim()||(lv<5&&!ready())){m.textContent=s.trim()?"還有必選的格子沒有填喔":"先寫一個句子";m.className="msg bad";return}
+b.disabled=true;m.textContent="🔍 老師檢查中…";m.className="msg";$("fb").innerHTML="";
+var r=await review(s);b.disabled=false;
+if(!r){award(s,m);$("fb").innerHTML='<div class="fbx">目前無法使用老師檢查，只做了基本文法檢查。</div>';return}
+if(r.ok&&!check(s).length){award(s,m);showFb(r,s)}else{showFb(r,s);m.textContent=r.ok?check(s).join("；"):"修改後再按一次完成，就能拿到經驗值！";m.className="msg bad"}}
+function listen(){var R=window.SpeechRecognition||window.webkitSpeechRecognition,s=cur(),m=$("msg");
+if(!s.trim()){m.textContent="先造一個句子";m.className="msg bad";return}
+if(!R){m.textContent="這個瀏覽器不能辨識聲音，先按「聽」再跟著唸";m.className="msg";return}
+var r=new R();r.lang="en-US";m.textContent="🎤 請唸出來…";m.className="msg";
+r.onresult=function(e){var said=e.results[0][0].transcript.toLowerCase().replace(/[^a-z ]/g,"").split(/\s+/),
+tw=s.toLowerCase().replace(/[^a-z ]/g," ").split(/\s+/).filter(Boolean),miss=tw.filter(function(w){return said.indexOf(w)<0});
+if(!miss.length){P.xp+=5;m.textContent="👏 唸得很清楚！+5 XP";m.className="msg good"}
+else{miss.forEach(function(w){if(P.weak.indexOf(w)<0)P.weak.push(w)});m.textContent="再試一次，這些字要加油："+miss.join(", ");m.className="msg bad"}
+save();var t=m.textContent,c=m.className;render();if(lv<5)upd();$("msg").textContent=t;$("msg").className=c};
+r.onerror=function(){m.textContent="沒聽到，再試一次";m.className="msg bad"};try{r.start()}catch(e){}}
+document.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var d=b.dataset;
+if(d.lv!=null){lv=+d.lv;st={};render();$("msg").textContent="";return}
+if(d.say){speak(d.say);return}
+if(d.add){var ta=$("ta");ta.value+=(ta.value&&!/\s$/.test(ta.value)?" ":"")+d.add;speak(d.add);return}
+if(d.k){var k=d.k,v=d.v;if(k=="V"){st={S:st.S,V:v}}else{st[k]=st[k]==v?"":v;if(k=="O")st.ADJ="";if(k=="CJ")st.T=""}
+speak(v);render();return}
+if(b.id=="bs")speak(cur());if(b.id=="bl")listen();if(b.id=="bd")done()});
+document.addEventListener("input",function(e){var k=e.target.dataset&&e.target.dataset.k;if(!k||e.target.className!="cu")return;
+st[k]=e.target.value.trim();if(k=="V"&&!V[st.V]){st.V=""}upd()});
+render();
+</script></body></html>
